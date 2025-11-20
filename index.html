@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calculadora de Vendas - Vanilla Sex Shop</title>
+  <title>Calculadora de Distribuição - Vanilla Sex Shop</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -20,49 +20,47 @@
       background: #362836;
       padding: 40px;
       border-radius: 15px;
-      max-width: 700px; /* Layout focado na vertical novamente */
+      max-width: 500px; /* Mais estreito para focar na entrada */
       width: 95%;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
     h1 {
       text-align: center;
       color: #ff79c6; /* Cor rosa/magenta de destaque */
-      font-size: 2.8em;
+      font-size: 2.5em;
       margin-bottom: 30px;
       text-shadow: 0 2px 5px #000;
     }
     h2 {
-      margin-top: 30px;
+      margin-top: 20px;
       color: #bd93f9;
       border-bottom: 1px solid #44475a;
       padding-bottom: 8px;
     }
-    table {
-      width: 100%;
-      margin-top: 15px;
-      border-collapse: collapse;
+    .input-group {
+        margin-bottom: 30px;
+        text-align: center;
     }
-    th, td {
-      padding: 12px;
-      font-size: 1.1em;
-      border-bottom: 1px solid #44475a;
-      text-align: left;
+    .input-group label {
+        display: block;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+        color: #f1fa8c;
     }
     input[type="number"] {
       width: 100%; 
-      min-width: 80px;
-      padding: 6px;
-      font-size: 1em;
+      padding: 10px;
+      font-size: 1.5em;
+      text-align: center;
       background: #383a4a;
       color: #fff;
-      border: 1px solid #6272a4;
+      border: 1px solid #ff79c6;
       border-radius: 8px;
       box-sizing: border-box;
     }
     .button-group {
       text-align: center;
       margin-top: 30px;
-      margin-bottom: 10px;
     }
     button {
       padding: 14px 28px;
@@ -92,7 +90,6 @@
       background: #1a1b26;
       padding: 20px;
       margin-top: 20px;
-      margin-bottom: 20px;
       border-radius: 10px;
       font-size: 1.3em;
       border: 1px solid #444;
@@ -104,51 +101,40 @@
         margin-bottom: 15px;
     }
     .breakdown p {
-        margin: 5px 0;
+        margin: 10px 0;
         text-align: left;
+        padding-left: 20px;
+    }
+    .breakdown strong {
+        color: #fff;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎀 Calculadora Vanilla Sex Shop</h1>
+    <h1>💸 Distribuição Vanilla</h1>
 
     <form id="calcForm">
 
       <div class="button-group top-button-group">
-        <button type="button" class="calculate" onclick="calcular()">Calcular Vendas</button>
-        <button type="button" class="reset" onclick="resetar()">Zerar</button>
+        <button type="button" class="calculate" onclick="calcular()">Calcular Distribuição</button>
       </div>
 
       <div id="resultado" class="result"></div>
 
-      <h2>📦 Itens Disponíveis</h2>
-      <table>
-        <tr><th>Item</th><th>Valor (R$)</th><th>Qtd Vendida</th></tr>
-        <tr><td>🎈 Camisinha</td><td>1.500</td><td><input type="number" name="CAMISINHA" min="0" value="0"></td></tr>
-        <tr><td>👗 Lingerie</td><td>1.500</td><td><input type="number" name="LINGERIE" min="0" value="0"></td></tr>
-        <tr><td>🔋 Vibrador</td><td>2.500</td><td><input type="number" name="VIBRADOR" min="0" value="0"></td></tr>
-        <tr><td>💧 Lubrificante</td><td>2.000</td><td><input type="number" name="LUBRIFICANTE" min="0" value="0"></td></tr>
-        <tr><td>鞭 Chicote</td><td>1.850</td><td><input type="number" name="CHICOTE" min="0" value="0"></td></tr>
-      </table>
+      <div class="input-group">
+          <label for="valorTotal">Insira o Valor Total da Venda (R$):</label>
+          <input type="number" id="valorTotal" name="valorTotal" step="0.01" min="0" value="0">
+      </div>
 
       <div class="button-group">
-        <button type="button" class="calculate" onclick="calcular()">Calcular Vendas</button>
+        <button type="button" class="calculate" onclick="calcular()">Calcular</button>
         <button type="button" class="reset" onclick="resetar()">Zerar</button>
       </div>
     </form>
   </div>
 
   <script>
-    // Preços dos itens baseados na sua lista (R$ 1,500 = 1500)
-    const precosItens = {
-      CAMISINHA: 1500,
-      LINGERIE: 1500,
-      VIBRADOR: 2500,
-      LUBRIFICANTE: 2000,
-      CHICOTE: 1850
-    };
-
     // Porcentagens de distribuição
     const porcentagens = {
         CLIENTE: 0.85, // 85%
@@ -157,32 +143,31 @@
     };
 
     function formatCurrency(value) {
-      // Formata como moeda brasileira, mas com 0 casas decimais para manter a clareza do R$ 1500,00
+      // Formata como moeda brasileira com 2 casas decimais.
       return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
     }
 
     function calcular() {
-      const form = document.forms["calcForm"];
-      let total = 0;
+      const input = document.getElementById("valorTotal");
+      // Certifica-se de que o valor é lido como float
+      const total = parseFloat(input.value) || 0;
       
-      // 1. Calcula o total das vendas
-      for (const item in precosItens) {
-        const input = form[item];
-        const qtd = parseInt(input ? input.value : '0') || 0;
-        total += precosItens[item] * qtd;
+      if (total <= 0) {
+        document.getElementById("resultado").innerHTML = "<strong>Por favor, insira um valor total válido.</strong>";
+        return;
       }
-      
-      // 2. Calcula a distribuição de porcentagem
+
+      // 1. Calcula a distribuição de porcentagem
       const valorCliente = total * porcentagens.CLIENTE;
       const valorVanilla = total * porcentagens.VANILLA;
       const valorLavador = total * porcentagens.LAVADOR;
 
-      // 3. Monta o resultado
+      // 2. Monta o resultado
       const resultadoHTML = `
         <div class="total-value">
-            <strong>TOTAL DE VENDAS: ${formatCurrency(total)}</strong>
+            <strong>VALOR TOTAL INSERIDO: ${formatCurrency(total)}</strong>
         </div>
-        <h2>💰 Distribuição do Valor:</h2>
+        <h2>💰 Distribuição:</h2>
         <div class="breakdown">
             <p><strong>Cliente (85%):</strong> ${formatCurrency(valorCliente)}</p>
             <p><strong>Vanilla (10%):</strong> ${formatCurrency(valorVanilla)}</p>
@@ -194,11 +179,7 @@
     }
 
     function resetar() {
-      const form = document.forms["calcForm"];
-      
-      // Reseta inputs de quantidade
-      for (const input of form.querySelectorAll('input[type="number"]')) input.value = 0;
-      
+      document.getElementById("valorTotal").value = 0;
       document.getElementById("resultado").innerHTML = "";
     }
   </script>
